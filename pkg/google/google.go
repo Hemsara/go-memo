@@ -34,33 +34,11 @@ func TokenFromFile(file string) (*oauth2.Token, error) {
 	return tok, err
 }
 
-func GetTokenFromWeb(config *oauth2.Config) *oauth2.Token {
-	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	fmt.Printf("Go to the following link in your browser then type the "+
-		"authorization code: \n%v\n", authURL)
+func GetTokenFromWeb(config *oauth2.Config, token string) string {
+	state := fmt.Sprintf(token)
+	authURL := config.AuthCodeURL(state, oauth2.AccessTypeOffline)
 
-	var authCode string
-	if _, err := fmt.Scan(&authCode); err != nil {
-		log.Fatalf("Unable to read authorization code: %v", err)
-	}
-
-	tok, err := config.Exchange(context.TODO(), authCode)
-	if err != nil {
-		log.Fatalf("Unable to retrieve token from web: %v", err)
-	}
-	return tok
-}
-
-// Retrieve a token, saves the token, then returns the generated client.
-func GetClient(config *oauth2.Config) *http.Client {
-
-	tokFile := "../token.json"
-	tok, err := TokenFromFile(tokFile)
-	if err != nil {
-		tok = GetTokenFromWeb(config)
-		SaveToken(tokFile, tok)
-	}
-	return config.Client(context.Background(), tok)
+	return authURL
 }
 
 func GetClientFromDB(user models.User, config *oauth2.Config) (*http.Client, error) {

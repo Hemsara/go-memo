@@ -29,6 +29,10 @@ func main() {
 		authRoutes.GET("/google", func(c *gin.Context) {
 			auth.AuthenticateHandler(c)
 		})
+		// This send request for google to grant access to db
+		authRoutes.GET("/google/send-request", middleware.AuthenticationGuard, func(c *gin.Context) {
+			auth.SendRequestHandler(c)
+		})
 		authRoutes.POST("/login", func(c *gin.Context) {
 			auth.LoginUserHandler(c)
 		})
