@@ -30,6 +30,7 @@ func InitializeGoogle() {
 	if err != nil {
 		log.Fatalf("Unable to retrieve Calendar client: %v", err)
 	}
+	log.Print("🙈 Google service initilized")
 	GoogleService = srv
 
 }

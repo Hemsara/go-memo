@@ -2,14 +2,13 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 
 	auth "calendar_automation/controllers/auth"
 	calendar "calendar_automation/controllers/calendar"
 
 	"calendar_automation/pkg/initializers"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/gin-gonic/gin"
 )
 
 func init() {
@@ -17,11 +16,16 @@ func init() {
 }
 
 func main() {
-	r := chi.NewRouter()
 
-	r.Get("/authenticate", auth.AuthenticateHandler)
-	r.Get("/calendar/today", calendar.TodaysCalendarHandler)
+	r := gin.Default()
+
+	r.GET("/authenticate", func(c *gin.Context) {
+		auth.AuthenticateHandler(c)
+	})
+	r.GET("/calendar/today", func(c *gin.Context) {
+		calendar.TodaysCalendarHandler(c)
+	})
 
 	fmt.Println("Starting server on :8080...")
-	http.ListenAndServe(":8080", r)
+	r.Run(":8080")
 }
