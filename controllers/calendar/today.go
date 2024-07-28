@@ -44,6 +44,8 @@ func TodaysCalendarHandler(c *gin.Context) {
 		var eventList []gin.H
 		for _, item := range events.Items {
 			date := item.Start.DateTime
+			color := item.ColorId
+
 			meetLink := ""
 			if item.ConferenceData != nil && item.ConferenceData.EntryPoints != nil {
 				for _, entryPoint := range item.ConferenceData.EntryPoints {
@@ -68,6 +70,7 @@ func TodaysCalendarHandler(c *gin.Context) {
 				"summary":   item.Summary,
 				"date":      date,
 				"meetLink":  meetLink,
+				"color":     color,
 				"attendees": attendees,
 			})
 		}

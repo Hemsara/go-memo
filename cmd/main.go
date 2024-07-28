@@ -17,6 +17,8 @@ func init() {
 	initializers.LoadENV()
 	database.New()
 	initializers.MakeMigrations()
+	initializers.InitRedis()
+
 }
 
 func main() {
@@ -29,7 +31,7 @@ func main() {
 		authRoutes.GET("/google", func(c *gin.Context) {
 			auth.AuthenticateHandler(c)
 		})
-		// This send request for google to grant access to db
+		// This send request for google to grant access to api
 		authRoutes.POST("/google/send-request", middleware.AuthenticationGuard, func(c *gin.Context) {
 			auth.SendRequestHandler(c)
 		})
