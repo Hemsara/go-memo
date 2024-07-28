@@ -1,20 +1,30 @@
 package controller
 
 import (
-	"calendar_automation/pkg/initializers"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"google.golang.org/api/calendar/v3"
 )
 
 func TodaysCalendarHandler(c *gin.Context) {
 
 	t := time.Now().Format(time.RFC3339)
-	// All for now
+	gs, exists := c.Get("gs")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Google service not found"})
+		return
+	}
 
-	events, err := initializers.GoogleService.Events.List("primary").ShowDeleted(false).
+	// Assert the type of the service to the expected type
+	service, ok := gs.(*calendar.Service)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Google service type"})
+		return
+	}
+	events, err := service.Events.List("primary").ShowDeleted(false).
 		SingleEvents(true).TimeMin(t).MaxResults(10).OrderBy("startTime").Do()
 	if err != nil {
 

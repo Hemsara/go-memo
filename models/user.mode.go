@@ -10,9 +10,9 @@ type User struct {
 	gorm.Model
 	Email        string    `gorm:"uniqueIndex;not null"`
 	Password     string    `gorm:"not null"`
-	AccessToken  string    `gorm:"not null"`
-	RefreshToken string    `gorm:"not null"`
-	ExpiredAt    time.Time `gorm:"not null"`
+	AccessToken  string    `gorm:""`
+	RefreshToken string    `gorm:""`
+	ExpiredAt    time.Time `gorm:""`
 }
 
 func (User) TableName() string {

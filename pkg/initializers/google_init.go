@@ -1,8 +1,10 @@
 package initializers
 
 import (
+	"calendar_automation/models"
 	google_calendar "calendar_automation/pkg/google"
 	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -11,26 +13,32 @@ import (
 	"google.golang.org/api/option"
 )
 
-var GoogleService *calendar.Service
+func SetupGoogle(user models.User) (*calendar.Service, error) {
+	if user.AccessToken == "" || user.RefreshToken == "" {
+		return nil, fmt.Errorf("please grant access to Google")
+	}
 
-func InitializeGoogle() {
 	ctx := context.Background()
 	b, err := os.ReadFile("../credentials.json")
 	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
+		return nil, fmt.Errorf("unable to read client secret file: %v", err)
 	}
 
 	config, err := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
 	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
+		return nil, fmt.Errorf("unable to parse client secret file to config: %v", err)
 	}
-	client := google_calendar.GetClient(config)
+
+	client, err := google_calendar.GetClientFromDB(user, config)
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve Calendar client: %v", err)
+	}
 
 	srv, err := calendar.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
-		log.Fatalf("Unable to retrieve Calendar client: %v", err)
+		return nil, fmt.Errorf("unable to retrieve Calendar service: %v", err)
 	}
-	log.Print("🙈 Google service initilized")
-	GoogleService = srv
 
+	log.Print("🔥 Google service initialized for user")
+	return srv, nil
 }

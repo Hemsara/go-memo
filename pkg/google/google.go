@@ -1,6 +1,7 @@
 package google_calendar
 
 import (
+	"calendar_automation/models"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -60,4 +61,15 @@ func GetClient(config *oauth2.Config) *http.Client {
 		SaveToken(tokFile, tok)
 	}
 	return config.Client(context.Background(), tok)
+}
+
+func GetClientFromDB(user models.User, config *oauth2.Config) (*http.Client, error) {
+
+	token := &oauth2.Token{
+		AccessToken:  user.AccessToken,
+		RefreshToken: user.RefreshToken,
+		Expiry:       user.ExpiredAt,
+	}
+
+	return config.Client(context.Background(), token), nil
 }
