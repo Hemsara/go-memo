@@ -4,14 +4,12 @@ import (
 	internal "calendar_automation/internal/token"
 	"calendar_automation/models"
 	"calendar_automation/pkg/database"
+	"calendar_automation/pkg/initializers"
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/oauth2/google"
-	"google.golang.org/api/calendar/v3"
 )
 
 func AuthenticateHandler(c *gin.Context) {
@@ -56,15 +54,7 @@ func AuthenticateHandler(c *gin.Context) {
 
 	// TODO : Organize code
 
-	b, err := os.ReadFile("../credentials.json")
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-			"error": "Unable to read credentials file",
-		})
-		return
-	}
-
-	config, err := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
+	config, err := initializers.GetGoogleConfig()
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": "Unable to parse credentials file",
@@ -104,8 +94,6 @@ func AuthenticateHandler(c *gin.Context) {
 
 	response := map[string]string{
 		"message": "Authentication successful!",
-		"code":    code,
-		"state":   state,
 	}
 
 	c.JSON(http.StatusOK, response)

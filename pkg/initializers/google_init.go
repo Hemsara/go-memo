@@ -8,10 +8,25 @@ import (
 	"log"
 	"os"
 
+	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/calendar/v3"
 	"google.golang.org/api/option"
 )
+
+func GetGoogleConfig() (*oauth2.Config, error) {
+
+	b, err := os.ReadFile("../credentials.json")
+	if err != nil {
+		return nil, fmt.Errorf("unable to read client secret file: %v", err)
+	}
+
+	config, err := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse client secret file to config: %v", err)
+	}
+	return config, nil
+}
 
 func SetupGoogle(user models.User) (*calendar.Service, error) {
 	if user.AccessToken == "" || user.RefreshToken == "" {
@@ -19,12 +34,8 @@ func SetupGoogle(user models.User) (*calendar.Service, error) {
 	}
 
 	ctx := context.Background()
-	b, err := os.ReadFile("../credentials.json")
-	if err != nil {
-		return nil, fmt.Errorf("unable to read client secret file: %v", err)
-	}
 
-	config, err := google.ConfigFromJSON(b, calendar.CalendarReadonlyScope)
+	config, err := GetGoogleConfig()
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse client secret file to config: %v", err)
 	}

@@ -13,6 +13,7 @@ func MakeMigrations() {
 
 	err := database.DB.AutoMigrate(
 		&models.User{},
+		&models.Meeting{},
 	)
 	if err != nil {
 		panic(fmt.Sprintf("cannot auto-migrate database: %s", err))
