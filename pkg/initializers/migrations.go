@@ -7,10 +7,11 @@ import (
 )
 
 func MakeMigrations() {
-	dbService := database.New()
+	if database.DB == nil {
+		panic("database connection is not initialized")
+	}
 
-	err := dbService.GetDB().AutoMigrate(
-
+	err := database.DB.AutoMigrate(
 		&models.User{},
 	)
 	if err != nil {

@@ -38,8 +38,7 @@ func Validate(str string) (isValid bool, token *jwt.Token, err error, claims jwt
 }
 
 func CreateToken(
-	driverPK string,
-	userName string,
+	email string,
 	duration time.Duration,
 ) (id uuid.UUID, token string, err error) {
 	now := time.Now().UTC()
@@ -53,9 +52,9 @@ func CreateToken(
 
 	claims["sub"] = id.String()
 	claims["exp"] = now.Add(duration).Unix()
-	claims["username"] = userName
+	claims["email"] = email
 
-	token, err = jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(os.Getenv("ADMIN_TOKEN_SECRET")))
+	token, err = jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(os.Getenv("ADMIN_SECRET")))
 	if err != nil {
 		return uuid.UUID{}, "", err
 	}

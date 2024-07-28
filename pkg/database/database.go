@@ -17,22 +17,11 @@ const (
 	DBDatabase = "DB_DATABASE"
 )
 
-type Service interface {
-	Close() error
-	GetDB() *gorm.DB
-}
+var DB *gorm.DB
 
-type service struct {
-	db *gorm.DB
-}
-
-var (
-	dbInstance *service
-)
-
-func New() Service {
-	if dbInstance != nil {
-		return dbInstance
+func New() {
+	if DB != nil {
+		return
 	}
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
@@ -43,25 +32,18 @@ func New() Service {
 		os.Getenv(DBPort),
 	)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	var err error
+	d, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Error opening database: %v", err)
 	}
-
-	dbInstance = &service{
-		db: db,
-	}
-	return dbInstance
+	DB = d
 }
 
-func (s *service) Close() error {
-	sqlDB, err := s.db.DB()
+func Close() error {
+	sqlDB, err := DB.DB()
 	if err != nil {
 		return err
 	}
 	return sqlDB.Close()
-}
-
-func (s *service) GetDB() *gorm.DB {
-	return s.db
 }
