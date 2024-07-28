@@ -9,10 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// TodaysCalendarHandler handles requests for today's calendar events
 func TodaysCalendarHandler(c *gin.Context) {
 
 	t := time.Now().Format(time.RFC3339)
+	// All for now
 
 	events, err := initializers.GoogleService.Events.List("primary").ShowDeleted(false).
 		SingleEvents(true).TimeMin(t).MaxResults(10).OrderBy("startTime").Do()
