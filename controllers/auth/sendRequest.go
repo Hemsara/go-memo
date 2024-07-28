@@ -2,7 +2,6 @@ package controller
 
 import (
 	google_calendar "calendar_automation/pkg/google"
-	"calendar_automation/pkg/initializers"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +19,7 @@ func SendRequestHandler(c *gin.Context) {
 		return
 	}
 
-	config, err := initializers.GetGoogleConfig()
+	config, err := google_calendar.GetGoogleConfig()
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable to read client secret file"})
 		return

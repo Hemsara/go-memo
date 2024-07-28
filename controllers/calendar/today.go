@@ -11,7 +11,6 @@ import (
 
 func TodaysCalendarHandler(c *gin.Context) {
 
-	t := time.Now().Format(time.RFC3339)
 	gs, exists := c.Get("gs")
 	if !exists {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Google service not found"})
@@ -24,6 +23,8 @@ func TodaysCalendarHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Google service type"})
 		return
 	}
+	t := time.Now().Format(time.RFC3339)
+
 	events, err := service.Events.List("primary").ShowDeleted(false).
 		SingleEvents(true).TimeMin(t).MaxResults(10).OrderBy("startTime").Do()
 	if err != nil {

@@ -4,7 +4,7 @@ import (
 	internal "calendar_automation/internal/token"
 	"calendar_automation/models"
 	"calendar_automation/pkg/database"
-	"calendar_automation/pkg/initializers"
+	google_calendar "calendar_automation/pkg/google"
 	"context"
 	"net/http"
 
@@ -50,7 +50,7 @@ func AuthenticateHandler(c *gin.Context) {
 
 	// TODO : Organize code
 
-	config, err := initializers.GetGoogleConfig()
+	config, err := google_calendar.GetGoogleConfig()
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": "Unable to parse credentials file",

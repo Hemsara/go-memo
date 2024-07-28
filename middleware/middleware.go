@@ -4,7 +4,7 @@ import (
 	internal "calendar_automation/internal/token"
 	"calendar_automation/models"
 	"calendar_automation/pkg/database"
-	"calendar_automation/pkg/initializers"
+	google_calendar "calendar_automation/pkg/google"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -48,7 +48,7 @@ func AuthenticationGuard(c *gin.Context) {
 		})
 		return
 	}
-	service, err := initializers.SetupGoogle(user)
+	service, err := google_calendar.SetupGoogle(user)
 	if err != nil {
 		c.AbortWithStatusJSON(401, gin.H{
 			"error": err.Error(),
