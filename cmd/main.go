@@ -12,7 +12,10 @@ import (
 )
 
 func init() {
+	initializers.LoadENV()
 	initializers.InitializeGoogle()
+	initializers.MakeMigrations()
+
 }
 
 func main() {
