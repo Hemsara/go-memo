@@ -6,7 +6,6 @@ import (
 	"calendar_automation/pkg/database"
 	"calendar_automation/pkg/initializers"
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -25,9 +24,6 @@ func AuthenticateHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "State parameter not found"})
 		return
 	}
-
-	fmt.Printf("Authorization code: %s\n", code)
-	fmt.Printf("State: %s\n", state)
 
 	isValid, _, err, clm := internal.Validate(state)
 	if err != nil {
