@@ -38,7 +38,7 @@ func main() {
 		authRoutes.POST("/google/send-request", middleware.AuthenticationGuard, func(c *gin.Context) {
 			google.SendRequestHandler(c)
 		})
-		authRoutes.POST("/login", func(c *gin.Context) {
+		authRoutes.POST("/login", middleware.IPInfoMiddleware, func(c *gin.Context) {
 			auth.LoginUserHandler(c)
 		})
 		authRoutes.POST("/register", func(c *gin.Context) {

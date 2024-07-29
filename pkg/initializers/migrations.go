@@ -13,6 +13,7 @@ func MakeMigrations() {
 
 	err := database.DB.AutoMigrate(
 		&models.User{},
+		&models.UserSession{},
 		&models.Meeting{},
 	)
 	if err != nil {

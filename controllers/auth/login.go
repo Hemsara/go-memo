@@ -2,6 +2,7 @@ package controller
 
 import (
 	internal "calendar_automation/internal/token"
+	"calendar_automation/middleware"
 	"calendar_automation/models"
 	"calendar_automation/pkg/database"
 	"time"
@@ -40,6 +41,25 @@ func LoginUserHandler(c *gin.Context) {
 	_, accessToken, err := internal.CreateToken(user.Email, 24*15*time.Hour)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable tp generate token"})
+		return
+	}
+	ipData, exists := c.Get("ipData")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve IP information from context"})
+		return
+	}
+	session := models.UserSession{
+		UserID:     user.ID,
+		City:       ipData.(middleware.IPData).City,
+		Country:    ipData.(middleware.IPData).Country,
+		RegionName: ipData.(middleware.IPData).RegionName,
+		Zip:        ipData.(middleware.IPData).Zip,
+		Timezone:   ipData.(middleware.IPData).Timezone,
+		ISP:        ipData.(middleware.IPData).ISP,
+		Query:      ipData.(middleware.IPData).Query,
+	}
+	if err := db.Create(&session).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register session"})
 		return
 	}
 

@@ -46,6 +46,7 @@ func Validate(str string) (isValid bool, token *jwt.Token, err error, claims jwt
 
 	return true, token, nil, clm
 }
+
 func ValidateFromRedis(uuid string) (isValid bool) {
 	_, err := initializers.RD.Get(ctx, uuid).Result()
 
