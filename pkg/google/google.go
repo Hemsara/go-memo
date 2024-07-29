@@ -2,11 +2,13 @@ package google_calendar
 
 import (
 	"calendar_automation/models"
+	"calendar_automation/pkg/database"
 	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -27,6 +29,25 @@ func GetClientFromDB(user models.User, config *oauth2.Config) (*http.Client, err
 		AccessToken:  user.AccessToken,
 		RefreshToken: user.RefreshToken,
 		Expiry:       user.ExpiredAt,
+	}
+
+	if time.Now().After(token.Expiry.Add(-5 * time.Minute)) {
+
+		tokenSource := config.TokenSource(context.Background(), token)
+		newToken, err := tokenSource.Token()
+		if err != nil {
+			return nil, err
+		}
+
+		user.AccessToken = newToken.AccessToken
+		user.RefreshToken = newToken.RefreshToken
+		user.ExpiredAt = newToken.Expiry
+
+		if err := database.DB.Save(&user).Error; err != nil {
+			return nil, err
+		}
+
+		token = newToken
 	}
 
 	return config.Client(context.Background(), token), nil

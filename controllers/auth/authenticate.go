@@ -80,6 +80,7 @@ func AuthenticateHandler(c *gin.Context) {
 	// Update the user's tokens in the database
 	user.AccessToken = tok.AccessToken
 	user.RefreshToken = tok.RefreshToken
+	user.ExpiredAt = tok.Expiry
 
 	if err := database.DB.Save(&user).Error; err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
