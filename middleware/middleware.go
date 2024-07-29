@@ -56,6 +56,7 @@ func AuthenticationGuard(c *gin.Context) {
 	}
 	c.Set("gs", service)
 	c.Set("tk", token)
+	c.Set("usr", user)
 
 	c.Next()
 }

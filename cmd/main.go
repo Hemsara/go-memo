@@ -4,6 +4,9 @@ import (
 	"fmt"
 
 	auth "calendar_automation/controllers/auth"
+	google "calendar_automation/controllers/auth/google"
+	user "calendar_automation/controllers/auth/user"
+
 	calendar "calendar_automation/controllers/calendar"
 	"calendar_automation/middleware"
 
@@ -29,11 +32,11 @@ func main() {
 	authRoutes := r.Group("/authenticate")
 	{
 		authRoutes.GET("/google", func(c *gin.Context) {
-			auth.AuthenticateHandler(c)
+			google.AuthenticateHandler(c)
 		})
 		// This send request for google to grant access to api
 		authRoutes.POST("/google/send-request", middleware.AuthenticationGuard, func(c *gin.Context) {
-			auth.SendRequestHandler(c)
+			google.SendRequestHandler(c)
 		})
 		authRoutes.POST("/login", func(c *gin.Context) {
 			auth.LoginUserHandler(c)
@@ -43,6 +46,14 @@ func main() {
 		})
 	}
 
+	// User routes
+	userRoutes := r.Group("/user")
+	{
+		userRoutes.GET("/profile", middleware.AuthenticationGuard, func(c *gin.Context) {
+			user.GetUserProfile(c)
+		})
+
+	}
 	// Calendar routes
 	calendarRoutes := r.Group("/calendar")
 	{

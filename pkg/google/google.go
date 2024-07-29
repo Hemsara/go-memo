@@ -68,7 +68,7 @@ func GetGoogleConfig() (*oauth2.Config, error) {
 
 func SetupGoogle(user models.User) (*calendar.Service, error) {
 	if user.AccessToken == "" || user.RefreshToken == "" {
-		return nil, fmt.Errorf("please grant access to Google")
+		return nil, nil
 	}
 
 	ctx := context.Background()
