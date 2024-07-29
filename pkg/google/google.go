@@ -28,7 +28,7 @@ func GetClientFromDB(user models.User, config *oauth2.Config) (*http.Client, err
 	token := &oauth2.Token{
 		AccessToken:  user.AccessToken,
 		RefreshToken: user.RefreshToken,
-		Expiry:       user.ExpiredAt,
+		Expiry:       user.TokenExpiredAt,
 	}
 
 	if time.Now().After(token.Expiry.Add(-5 * time.Minute)) {
@@ -41,7 +41,7 @@ func GetClientFromDB(user models.User, config *oauth2.Config) (*http.Client, err
 
 		user.AccessToken = newToken.AccessToken
 		user.RefreshToken = newToken.RefreshToken
-		user.ExpiredAt = newToken.Expiry
+		user.TokenExpiredAt = newToken.Expiry
 
 		if err := database.DB.Save(&user).Error; err != nil {
 			return nil, err

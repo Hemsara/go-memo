@@ -9,6 +9,14 @@ import (
 	"google.golang.org/api/calendar/v3"
 )
 
+type dailyEvent struct {
+	Attendees *[]string
+	Color     *string
+	Summary   *string
+	Date      *time.Time
+	MeetLink  *string
+}
+
 func TodaysCalendarHandler(c *gin.Context) {
 
 	gs, exists := c.Get("gs")
@@ -17,16 +25,18 @@ func TodaysCalendarHandler(c *gin.Context) {
 		return
 	}
 
-	// Assert the type of the service to the expected type
 	service, ok := gs.(*calendar.Service)
 	if !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Google service type"})
 		return
 	}
-	t := time.Now().Format(time.RFC3339)
+	now := time.Now()
+
+	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	tomorrowStart := todayStart.Add(24 * time.Hour)
 
 	events, err := service.Events.List("primary").ShowDeleted(false).
-		SingleEvents(true).TimeMin(t).MaxResults(10).OrderBy("startTime").Do()
+		SingleEvents(true).TimeMin(todayStart.Format(time.RFC3339)).TimeMax(tomorrowStart.Format(time.RFC3339)).MaxResults(10).OrderBy("startTime").Do()
 	if err != nil {
 
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -41,7 +51,7 @@ func TodaysCalendarHandler(c *gin.Context) {
 		})
 	} else {
 
-		var eventList []gin.H
+		var eventList []dailyEvent
 		for _, item := range events.Items {
 			date := item.Start.DateTime
 			color := item.ColorId
@@ -66,12 +76,19 @@ func TodaysCalendarHandler(c *gin.Context) {
 				date = item.Start.Date
 			}
 
-			eventList = append(eventList, gin.H{
-				"summary":   item.Summary,
-				"date":      date,
-				"meetLink":  meetLink,
-				"color":     color,
-				"attendees": attendees,
+			t, err := time.Parse("2006-01-02T15:04:05-07:00", date)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{
+					"message": "Something went wrong",
+				})
+				return
+			}
+			eventList = append(eventList, dailyEvent{
+				Attendees: &attendees,
+				Color:     &color,
+				Summary:   &item.Summary,
+				Date:      &t,
+				MeetLink:  &meetLink,
 			})
 		}
 

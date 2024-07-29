@@ -8,11 +8,11 @@ import (
 
 type User struct {
 	gorm.Model
-	Email        string    `gorm:"uniqueIndex;not null"`
-	Password     string    `gorm:"not null"`
-	AccessToken  string    `gorm:""`
-	RefreshToken string    `gorm:""`
-	ExpiredAt    time.Time `gorm:""`
+	Email          string    `gorm:"uniqueIndex;not null"`
+	Password       string    `gorm:"not null"`
+	AccessToken    string    `gorm:""`
+	RefreshToken   string    `gorm:""`
+	TokenExpiredAt time.Time `gorm:""`
 }
 
 func (User) TableName() string {
