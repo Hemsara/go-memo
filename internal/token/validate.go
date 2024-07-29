@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"calendar_automation/pkg/initializers"
 	"context"
 	"fmt"
 	"os"
@@ -33,8 +34,27 @@ func Validate(str string) (isValid bool, token *jwt.Token, err error, claims jwt
 	if !ok || !token.Valid {
 		return false, nil, fmt.Errorf("invalid token"), nil
 	}
+	sub, ok := clm["sub"].(string)
+	if !ok {
+		return false, nil, fmt.Errorf("subject claim is not a string"), nil
+	}
+	exist := ValidateFromRedis(sub)
+
+	if !exist {
+		return false, nil, fmt.Errorf("token access revoked"), nil
+	}
 
 	return true, token, nil, clm
+}
+func ValidateFromRedis(uuid string) (isValid bool) {
+	_, err := initializers.RD.Get(ctx, uuid).Result()
+
+	if err != nil {
+		return false
+	}
+
+	return true
+
 }
 
 func CreateToken(
@@ -58,6 +78,13 @@ func CreateToken(
 	if err != nil {
 		return uuid.UUID{}, "", err
 	}
-
+	if err := SaveTokenToRedis(id.String(), token, duration); err != nil {
+		return uuid.UUID{}, "", err
+	}
 	return id, token, nil
+}
+
+func SaveTokenToRedis(key, token string, expiration time.Duration) error {
+	client := initializers.RD
+	return client.Set(ctx, key, token, expiration).Err()
 }
