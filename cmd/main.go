@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
 
 	auth "calendar_automation/controllers/auth"
 	google "calendar_automation/controllers/auth/google"
@@ -44,6 +46,7 @@ func main() {
 		authRoutes.POST("/register", func(c *gin.Context) {
 			auth.RegisterUserHandler(c)
 		})
+
 	}
 
 	// User routes
@@ -60,8 +63,35 @@ func main() {
 		calendarRoutes.GET("/today", middleware.AuthenticationGuard, func(c *gin.Context) {
 			calendar.TodaysCalendarHandler(c)
 		})
+		calendarRoutes.POST("/log", func(c *gin.Context) {
+			SendRequestHandler(c)
+		})
+
 	}
 
 	fmt.Println("Starting server on :8080...")
 	r.Run(":8080")
+}
+func SendRequestHandler(c *gin.Context) {
+    // Declare a variable to store the incoming JSON data
+    var jsonData map[string]interface{}
+
+    // Bind the JSON data from the request body to the variable
+    if err := c.ShouldBindJSON(&jsonData); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON data"})
+        return
+    }
+
+    // Convert the JSON data to a JSON string for logging
+    jsonBytes, err := json.Marshal(jsonData)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to marshal JSON data"})
+        return
+    }
+
+    // Log the JSON data as a JSON string
+    fmt.Printf("Received JSON data: %s\n", string(jsonBytes))
+
+    // Return the JSON data as a response
+    c.JSON(http.StatusOK, jsonData)
 }

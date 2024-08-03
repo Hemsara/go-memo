@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"fmt"
+	response_handler "calendar_automation/internal/response"
 	"net/http"
 	"time"
 
@@ -21,13 +21,14 @@ func TodaysCalendarHandler(c *gin.Context) {
 
 	gs, exists := c.Get("gs")
 	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Google service not found"})
+		response_handler.Error(c, http.StatusInternalServerError, "Google service not found")
+
 		return
 	}
 
 	service, ok := gs.(*calendar.Service)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid Google service type"})
+		response_handler.Error(c, http.StatusInternalServerError, "Invalid Google service type")
 		return
 	}
 	now := time.Now()
@@ -38,17 +39,13 @@ func TodaysCalendarHandler(c *gin.Context) {
 	events, err := service.Events.List("primary").ShowDeleted(false).
 		SingleEvents(true).TimeMin(todayStart.Format(time.RFC3339)).TimeMax(tomorrowStart.Format(time.RFC3339)).MaxResults(10).OrderBy("startTime").Do()
 	if err != nil {
-
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": fmt.Sprintf("Unable to retrieve calendar events: %v", err),
-		})
+		response_handler.Error(c, http.StatusInternalServerError, "Unable to retrieve calendar events")
 		return
 	}
 
 	if len(events.Items) == 0 {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "No upcoming events found.",
-		})
+		response_handler.Success(c, gin.H{"events": events})
+
 	} else {
 
 		var eventList []dailyEvent
@@ -78,9 +75,9 @@ func TodaysCalendarHandler(c *gin.Context) {
 
 			t, err := time.Parse("2006-01-02T15:04:05-07:00", date)
 			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{
-					"message": "Something went wrong",
-				})
+
+				response_handler.Error(c, http.StatusBadRequest, "Something went wrong")
+
 				return
 			}
 			eventList = append(eventList, dailyEvent{
@@ -91,7 +88,7 @@ func TodaysCalendarHandler(c *gin.Context) {
 				MeetLink:  &meetLink,
 			})
 		}
+		response_handler.Success(c, gin.H{"events": eventList})
 
-		c.JSON(http.StatusOK, eventList)
 	}
 }

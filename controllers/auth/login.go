@@ -1,6 +1,7 @@
 package controller
 
 import (
+	response_handler "calendar_automation/internal/response"
 	internal "calendar_automation/internal/token"
 	"calendar_automation/middleware"
 	"calendar_automation/models"
@@ -29,23 +30,25 @@ func LoginUserHandler(c *gin.Context) {
 	db := database.DB
 
 	if err := db.Where("email = ?", req.Email).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		response_handler.Error(c, http.StatusUnauthorized, "User not found")
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Incorrect password"})
+		response_handler.Error(c, http.StatusUnauthorized, "Incorrect password")
+
 		return
 	}
 
 	_, accessToken, err := internal.CreateToken(user.Email, 24*15*time.Hour)
+
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unable tp generate token"})
+		response_handler.Error(c, http.StatusUnauthorized, "Unable to generate token")
 		return
 	}
 	ipData, exists := c.Get("ipData")
 	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve IP information from context"})
+		response_handler.Error(c, http.StatusBadRequest, "Unable to save session")
 		return
 	}
 	session := models.UserSession{
@@ -59,11 +62,10 @@ func LoginUserHandler(c *gin.Context) {
 		Query:      ipData.(middleware.IPData).Query,
 	}
 	if err := db.Create(&session).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register session"})
+		response_handler.Error(c, http.StatusBadRequest, "Unable to save session")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"access_token": accessToken,
-	})
+	response_handler.Success(c, gin.H{"access_token": accessToken})
+
 }
