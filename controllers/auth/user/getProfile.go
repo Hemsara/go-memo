@@ -1,6 +1,7 @@
 package controller
 
 import (
+	response_handler "calendar_automation/internal/response"
 	"calendar_automation/models"
 	"net/http"
 
@@ -29,6 +30,6 @@ func GetUserProfile(c *gin.Context) {
 		Email:              user.Email,
 		IsLinkedWithGoogle: isGoogleGranted,
 	}
+	response_handler.Success(c, gin.H{"profile": userProfile})
 
-	c.JSON(http.StatusOK, gin.H{"profile": userProfile})
 }

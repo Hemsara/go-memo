@@ -1,6 +1,7 @@
 package controller
 
 import (
+	response_handler "calendar_automation/internal/response"
 	google_calendar "calendar_automation/pkg/google"
 	"net/http"
 
@@ -27,9 +28,6 @@ func SendRequestHandler(c *gin.Context) {
 	}
 	authURL := google_calendar.GetTokenFromWeb(config, tokenString)
 
-	response := map[string]string{
-		"url": authURL,
-	}
+	response_handler.Success(c, gin.H{"google": authURL})
 
-	c.JSON(http.StatusOK, response)
 }
